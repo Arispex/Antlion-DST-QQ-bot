@@ -12,10 +12,11 @@ world_info = on_command('世界信息')
 
 
 @world_info.handle()
-async def world_info_handle(event: Event, bot:Bot):
+async def world_info_handle(event: Event, bot: Bot):
     msg_spilt = event.get_plaintext().split(" ")
     # 判断语法是否正确
     if len(msg_spilt) == 2:
+        await world_info.send("正在获取数据中，请稍等...")
         # 获取服务器信息
         server_num = msg_spilt[1]
         row_id = tools.get_server_row_id(int(server_num))
@@ -56,7 +57,6 @@ async def world_info_handle(event: Event, bot:Bot):
                     # 服务器季节剩余的天数
                     server_days_leftin = re.findall(r"daysleftinseason=(.*?) ", server_data)[0]
 
-
                     # 当前时间
                     now_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
                     # 发送消息
@@ -72,7 +72,7 @@ async def world_info_handle(event: Event, bot:Bot):
     # 语法错误
     else:
         await world_info.finish("请输入正确的格式：\n"
-                           "世界信息 [世界序号]")
+                                "世界信息 [世界序号]")
 
 
 # 在线玩家
@@ -80,10 +80,11 @@ online_player = on_command('在线玩家')
 
 
 @online_player.handle()
-async def online_player_handle(event: Event, bot:Bot):
+async def online_player_handle(event: Event, bot: Bot):
     msg_spilt = event.get_plaintext().split(" ")
     # 判断语法是否正确
     if len(msg_spilt) == 2:
+        await online_player.send("正在获取数据中，请稍等...")
         # 获取服务器信息
         server_num = msg_spilt[1]
         row_id = tools.get_server_row_id(int(server_num))
@@ -119,7 +120,8 @@ async def online_player_handle(event: Event, bot:Bot):
                     name = server_info[0]['name']
 
                     # 处理返回的lua数组 转换成列表
-                    server_players_list = server_players_list.replace("\n", "").replace("return ", "").replace("{",'[').replace(
+                    server_players_list = server_players_list.replace("\n", "").replace("return ", "").replace("{",
+                                                                                                               '[').replace(
                         "}", "]").replace(" ", "").replace("[[", '[{"').replace("]]", '"}]').replace("=", '"=').replace(
                         ",", ',"').replace('],"[', '},["').replace('""', '"').replace('},[', '},{').replace('=', ':')
                     server_players_list = json.loads(server_players_list)
@@ -127,11 +129,35 @@ async def online_player_handle(event: Event, bot:Bot):
                     for i in server_players_list:
                         send_data.append(f" {i['name']} ({i['prefab']})")
 
-                    await online_player.finish(f'{name}\n在线玩家({str(connected)}/{str(max_connections)})：\n' + "\n".join(send_data))
+                    await online_player.finish(
+                        f'{name}\n在线玩家({str(connected)}/{str(max_connections)})：\n' + "\n".join(send_data))
 
             else:
-                await world_info.finish(event, "服务器信息获取失败")
+                await online_player.finish(event, "服务器信息获取失败")
     # 语法错误
     else:
-        await world_info.finish("请输入正确的格式：\n"
-                                "世界信息 [世界序号]")
+        await online_player.finish("请输入正确的格式：\n"
+                                   "在线玩家 [世界序号]")
+
+
+# 直连代码
+connect_code = on_command('直连代码')
+
+
+@connect_code.handle()
+async def connect_code_handle(event: Event, bot: Bot):
+    msg_spilt = event.get_plaintext().split(" ")
+    # 判断语法是否正确
+    if len(msg_spilt) == 2:
+        # 获取服务器信息
+        server_num = msg_spilt[1]
+        with open("server.config", "r") as f:
+            server_config = json.load(f)
+        # 判断服务器是否存在
+        if server_num <= len(server_config):
+            await connect_code.finish(f'c_connect("{server_config[str(server_num)]["ip"]}", {server_config[str(server_num)]["port"]})')
+        else:
+            await connect_code.finish("服务器不存在")
+    else:
+        await connect_code.finish("请输入正确的格式：\n"
+                                  "直连代码 [世界序号]")
