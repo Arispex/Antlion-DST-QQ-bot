@@ -1,3 +1,7 @@
+# ⚠️该项目已废弃
+
+如果你正在寻找类似的项目，不妨看看[这个](https://github.com/Qianyiovo/DontStarveTogetherBot)。
+
 # Antlion-DST-QQ-bot
 
 Don't Starve Together(饥荒联机版)QQ机器人
